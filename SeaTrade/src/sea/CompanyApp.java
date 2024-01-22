@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 
-public class CompanyApp {
+public class CompanyApp implements AutoCloseable {
     private Socket socket;
     private DataOutputStream toServer;
     private DataInputStream fromServer;
@@ -18,7 +18,8 @@ public class CompanyApp {
 
         // Establish a connection to the database
         Class.forName("com.mysql.cj.jdbc.Driver");
-        this.dbConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/seatrade", "user", "password");
+        // Connection string without a password
+        this.dbConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/seatrade", "root", "");
     }
 
     public void registerWithServer(String companyName) throws IOException {
@@ -31,35 +32,29 @@ public class CompanyApp {
         // Fetch new data from server and update local database
         String data = fromServer.readUTF();
         // Assuming data is in JSON format and needs to be parsed and inserted into the database
-        // This is a placeholder for the actual data processing logic
+        // Placeholder for actual data processing logic
     }
 
     public void sendCommandToShip(String command) throws IOException {
         // Send commands to the ShipApp
         toServer.writeUTF("COMMAND " + command);
         toServer.flush();
+        jbjbjh();
     }
 
-   
-    public void closeResources() throws IOException, SQLException {
+    @Override
+    public void close() throws IOException, SQLException {
         // Close all resources
-        toServer.close();
-        fromServer.close();
-        socket.close();
-        dbConnection.close();
+        if (toServer != null) toServer.close();
+        if (fromServer != null) fromServer.close();
+        if (socket != null) socket.close();
+        if (dbConnection != null) dbConnection.close();
     }
-
-    // Additional methods for business logic can be added here
-    // For example, handling user registration, managing ship data, etc.
 
     public static void main(String[] args) {
-        try {
-            CompanyApp companyApp = new CompanyApp("localhost", 8150);
+        try (CompanyApp companyApp = new CompanyApp("localhost", 8150)) {
             companyApp.registerWithServer("MyCompanyName");
-            
             // More logic to interact with the server and database
-            
-            companyApp.closeResources();
         } catch (IOException | ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
