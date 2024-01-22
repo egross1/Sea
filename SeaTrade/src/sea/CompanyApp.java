@@ -39,7 +39,7 @@ public class CompanyApp implements AutoCloseable {
         // Send commands to the ShipApp
         toServer.writeUTF("COMMAND " + command);
         toServer.flush();
-        jbjbjh();
+
     }
 
     @Override
